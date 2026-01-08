@@ -3,8 +3,6 @@
 a rudimentary unix-able shell with absolutely no advantages over other more common shells.
 
 > **missing features:**
-> - literal spaces
-> - quotes for argument combinations
 > - bin hashing (and general PATH usage)
 > - scripting
 > - output redirection and piping
