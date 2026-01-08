@@ -18,15 +18,26 @@
 //script
 //
 
+//TODO: make this count words with backslashing literals and quotes
 uint32_t count_words(char* string){
 	bool counting_command = false;
+	char quote_mode = 0;
 	uint32_t word_count = 0;
 	for(int i = 0; string[i] != 0; ++i){
-		if(!counting_command && isgraph(string[i])){
-			counting_command = true;
-			++word_count;
-		} else if (counting_command && isspace(string[i])) {
-			counting_command = false;
+		if(quote_mode){
+			if(string[i] == quote_mode){
+				quote_mode = 0;
+			}		
+		} else {
+			if(string[i] == '\"' || string[i] == '\''){
+				quote_mode = string[i];
+			}
+			if(!counting_command && isgraph(string[i])){
+				counting_command = true;
+				++word_count;
+			} else if (counting_command && isspace(string[i])) {
+				counting_command = false;
+			}
 		}
 	}
 	return word_count;
@@ -46,6 +57,7 @@ void free_argified(struct argified freeobj){
 	}
 }
 
+//TODO: make this count words with backslashing literals and quotes
 struct argified argify(char* command){
 
 	//count arguments
@@ -63,17 +75,30 @@ struct argified argify(char* command){
 	uint32_t* arg_sizes = calloc(arg_count, sizeof(uint32_t));
 	uint32_t* arg_pos = calloc(arg_count, sizeof(uint32_t));
 	bool counting_command = false;
+	char quote_mode = 0;
 	int arg_num = 0;
 	for(int i = 0; command[i] != 0; ++i){
-		if(!counting_command && isgraph(command[i])){
-			counting_command = true;
-			arg_pos[arg_num] = i;
-			++arg_sizes[arg_num];
-		} else if (counting_command && isspace(command[i])) {
-			counting_command = false;
-			++arg_num;
-		} else if (counting_command) {
-			++arg_sizes[arg_num];
+		if(quote_mode){
+			if(command[i] == quote_mode){
+				quote_mode = 0;
+			} else {
+				++arg_sizes[arg_num];
+			}
+		} else {
+			if(command[i] == '\"' || command[i] == '\''){
+				quote_mode = command[i];
+				i++;
+			}
+			if(!counting_command && isgraph(command[i])){
+				counting_command = true;
+				arg_pos[arg_num] = i;
+				++arg_sizes[arg_num];
+			} else if (counting_command && isspace(command[i])) {
+				counting_command = false;
+				++arg_num;
+			} else if (counting_command) {
+				++arg_sizes[arg_num];
+			}
 		}
 	}
 
@@ -111,6 +136,10 @@ int main(int argc, char** argv){
 
 		//cram everything into a function which just makes a neat bunch of args
 		struct argified arglist = argify(input);
+
+		for(int i = 0; i < arglist.count; i++){
+			printf("%d: %s\n", i, arglist.args[i]);
+		}
 
 		//fork and execv
 		if(arglist.count == 1 && !strcmp(arglist.args[0], "exit")){
