@@ -57,7 +57,7 @@ void free_argified(struct argified freeobj){
 	}
 }
 
-//TODO: make this count words with backslashing literals and quotes
+//rewrite system by which this shit works (it ugly and voodoo)
 struct argified argify(char* command){
 
 	//count arguments
@@ -79,17 +79,20 @@ struct argified argify(char* command){
 	int arg_num = 0;
 	for(int i = 0; command[i] != 0; ++i){
 		if(quote_mode){
+			printf("quotemode i: %d\n", i);
 			if(command[i] == quote_mode){
 				quote_mode = 0;
+				++arg_sizes[arg_num];
 			} else {
 				++arg_sizes[arg_num];
 			}
 		} else {
 			if(command[i] == '\"' || command[i] == '\''){
 				quote_mode = command[i];
-				i++;
-			}
-			if(!counting_command && isgraph(command[i])){
+				counting_command = true;
+				++i;
+				arg_pos[arg_num] = i;
+			} else if(!counting_command && isgraph(command[i])){
 				counting_command = true;
 				arg_pos[arg_num] = i;
 				++arg_sizes[arg_num];
